@@ -77,6 +77,14 @@ function createGardenHelper()
   Game.gardenHelper.loaded = true;
 };
 
-window.addEventListener('DOMContentLoaded', (event) => {
+// Initialize the garden helper
+if (document.readyState === 'interactive')
+{
   bootstrap();
-});
+}
+else
+{
+  window.addEventListener('DOMContentLoaded', (event) => {
+    bootstrap();
+  });
+}
