@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Gardenhelper for Cookie Clicker
+// @name        Platypus Helper for Cookie Clicker
 // @namespace   Violentmonkey Scripts
 // @match       https://orteil.dashnet.org/cookieclicker/
 // @grant       none
@@ -10,20 +10,25 @@
 
 function bootstrap() {
   Game.gardenHelper = {}
-  
+  Game.stockHelper = {}
+
   var load = function() {
     var Game = window.Game;
     if (Game && Game.ready)
     {
-      createGardenHelper();
-      return true;    
+      if (!Game.gardenHelper.loaded)
+        createGardenHelper();
+      if (!Game.stockHelper.loaded)
+        createStockHelper();
+      return true;
     }
-    return false;    
+    return false;
+
   };
-  
+
   load();
-  
-  if (!Game.gardenHelper.loaded)
+
+  if (!Game.gardenHelper.loaded || !Game.stockHelper.loaded)
   {
     var interval = setInterval(function() {
       if(load())
@@ -56,7 +61,7 @@ function createGardenHelper()
           fillPlot(0, x, y);
       }
   };
-  
+
   let master = document.createElement("div");
   master.style["position"] = "absolute";
   master.style["right"] = "0px";
@@ -64,17 +69,91 @@ function createGardenHelper()
   master.style["padding"] = "10px";
   master.style["background"] = "#f805";
   Game.gardenHelper.gardenContainer.appendChild(master);
-  
+
   let heading = document.createElement("p");
   heading.textContent = "Platypus' Garden Helper";
   master.appendChild(heading);
-  
+
   let createPatternButton = document.createElement("button");
   createPatternButton.textContent = "Fill Plot";
   createPatternButton.onclick = Game.gardenHelper.createPattern;
   master.appendChild(createPatternButton);
-  
+
   Game.gardenHelper.loaded = true;
+};
+
+function createStockHelper()
+{
+  Game.stockHelper.getStockInstance = function() { return Game.Objects["Bank"].minigame; }
+  Game.stockHelper.stockContainer = document.getElementById("bankContent");
+
+  // Source for these numbers: https://www.reddit.com/r/CookieClicker/comments/iscqva/stock_market_numbers_for_high_and_low/
+  // I know, the newest two are still missing
+  Game.stockHelper.stockHints = {
+    "CRL": { "low": 1.75, "high": 45, "buy": 5 },
+    "CHC": { "low": 2.25, "high": 57, "buy": 5 },
+    "BTR": { "low": 2.25, "high": 75, "buy": 5 },
+    "SUG": { "low": 2.25, "high": 72, "buy": 5 },
+    "NUT": { "low": 2, "high": 81, "buy": 5 },
+    "SLT": { "low": 2.25, "high": 108, "buy": 5 },
+    "VNL": { "low": 2.5, "high": 96, "buy": 5 },
+    "EGG": { "low": 4, "high": 114, "buy": 5 },
+    "CNM": { "low": 3.75, "high": 106, "buy": 5 },
+    "CRM": { "low": 2.75, "high": 116, "buy": 5 },
+    "JAM": { "low": 3, "high": 135, "buy": 5 },
+    "WCH": { "low": 4.25, "high": 149, "buy": 5 },
+    "HNY": { "low": 5.25, "high": 141, "buy": 7.5 },
+    "CKI": { "low": 21, "high": 175, "buy": 25 },
+    "RCP": { "low": 27, "high": 165, "buy": 30 }
+  };
+
+  Game.stockHelper.borderStyles = {
+    "buy": "solid 1px #0f0",
+    "sell": "solid 1px #f00",
+    "notify": "dotted 2px "
+  };
+  Game.stockHelper.refreshColors = function() {
+    var miniGame = Game.stockHelper.getStockInstance();
+    if (!miniGame)
+      return;
+
+    for (var i=0;i<miniGame.goodsById.length;i++)
+		{
+			var me=miniGame.goodsById[i];
+
+      var element = me.l.children[1];
+      var hint = Game.stockHelper.stockHints[me.symbol];
+      if (hint)
+      {
+        if (me.val < hint.buy)
+          element.style.border = Game.stockHelper.borderStyles.buy;
+        else if (me.val >= (hint.high - 2))
+          element.style.border = Game.stockHelper.borderStyles.sell;
+        else
+        {
+          var percentage = (me.val - hint.low) / (hint.high - hint.low);
+          var clamp01 = function(x) { return Math.min(Math.max(x, 0), 1); }
+          var r = clamp01(percentage * -2 + 2) * 255;
+          var g = clamp01(percentage * 2 - 1) * 255;
+          element.style.border = Game.stockHelper.borderStyles.notify + "rgb(" + r + "," + g + ", 0)";
+        }
+      }
+    }
+  };
+
+  var overrideTick = function()
+  {
+    var oldTick = miniGame.tick;
+    miniGame.tick = function()
+    {
+      oldTick();
+      Game.stockHelper.refreshColors();
+    }
+  }
+
+  Game.stockHelper.refreshColors();
+
+  Game.stockHelper.loaded = true;
 };
 
 // Initialize the garden helper
