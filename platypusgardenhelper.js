@@ -131,7 +131,7 @@ function createStockHelper()
           element.style.border = Game.stockHelper.borderStyles.sell;
         else
         {
-          var percentage = (me.val - hint.low) / (hint.high - hint.low);
+          var percentage = 1 - (me.val - hint.low) / (hint.high - hint.low);
           var clamp01 = function(x) { return Math.min(Math.max(x, 0), 1); }
           var r = clamp01(percentage * -2 + 2) * 255;
           var g = clamp01(percentage * 2 - 1) * 255;
