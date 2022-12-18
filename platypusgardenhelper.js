@@ -141,7 +141,7 @@ function createStockHelper()
     }
   };
 
-  var overrideTick = function()
+  var overrideTick = function(miniGame)
   {
     var oldTick = miniGame.tick;
     miniGame.tick = function()
@@ -150,7 +150,8 @@ function createStockHelper()
       Game.stockHelper.refreshColors();
     }
   }
-
+  
+  overrideTick(Game.stockHelper.getStockInstance());
   Game.stockHelper.refreshColors();
 
   Game.stockHelper.loaded = true;
