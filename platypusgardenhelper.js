@@ -11,6 +11,7 @@
 function bootstrap() {
   Game.gardenHelper = {}
   Game.stockHelper = {}
+  Game.priceSuggestion = {}
 
   var load = function() {
     var Game = window.Game;
@@ -20,6 +21,8 @@ function bootstrap() {
         createGardenHelper();
       if (!Game.stockHelper.loaded)
         createStockHelper();
+      if (!Game.priceSuggestion.loaded)
+        createPriceSuggestion();
       return true;
     }
     return false;
@@ -150,12 +153,52 @@ function createStockHelper()
       Game.stockHelper.refreshColors();
     }
   }
-  
-  overrideTick(Game.stockHelper.getStockInstance());
+
   Game.stockHelper.refreshColors();
+  overrideTick(Game.stockHelper.getStockInstance());
 
   Game.stockHelper.loaded = true;
 };
+
+function createPriceSuggestion()
+{
+  Game.priceSuggestion.className = 'cheapest_price';
+
+  { // Define style
+    var className = Game.priceSuggestion.className;
+    var styleElement = document.createElement('style');
+    styleElement.type = 'text/css';
+    styleElement.innerHTML = "." + className + "::after { color:#0f0;content:'💰'; }";
+    document.head.appendChild(styleElement);
+  }
+
+  Game.priceSuggestion.ratiosById = {}
+  Game.priceSuggestion.ratioCalc = function(me) { return me.getPrice(me.amount) / ((me.storedTotalCps/me.amount)*Game.globalCpsMult); }
+  Game.priceSuggestion.refresh = function()
+  {
+    var me = Game.priceSuggestion;
+    for(var i in Game.ObjectsById)
+      me.ratiosById[i] = me.ratioCalc(Game.ObjectsById[i]);
+
+    var ratioData = [];
+    for(var i in me.ratiosById)
+      ratioData.push({ id: i, value: me.ratiosById[i]});
+
+    var compare = function(a, b) { if (a.value < b.value) return -1; if (a.value > b.value) return 1; return 0; }
+    ratioData.sort(compare);
+
+    for(var i in ratioData)
+    {
+      var element = Game.ObjectsById[ratioData[i].id].l;
+      if (i == 0)
+        element.childNodes[2].childNodes[3].classList.add(Game.priceSuggestion.className);
+      else
+        element.childNodes[2].childNodes[3].classList.remove(Game.priceSuggestion.className)
+    }
+  }
+
+  Game.priceSuggestion.loaded = true;
+}
 
 // Initialize the garden helper
 if (document.readyState === 'interactive')
