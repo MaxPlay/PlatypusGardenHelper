@@ -70,6 +70,7 @@ class stockHelper extends miniGameHelper {
   constructor() {
     super("Bank", "bankContent");
 
+    // Reusing the RCP stock hints for SBD, PBL and YOU, because I don't have reliable data about their behavior, but want to show an indicator
     this.stockHints = {
       "CRL": { "low": 1.75, "high": 45, "buy": 5 },
       "CHC": { "low": 2.25, "high": 57, "buy": 5 },
@@ -85,7 +86,10 @@ class stockHelper extends miniGameHelper {
       "WCH": { "low": 4.25, "high": 149, "buy": 5 },
       "HNY": { "low": 5.25, "high": 141, "buy": 7.5 },
       "CKI": { "low": 21, "high": 175, "buy": 25 },
-      "RCP": { "low": 27, "high": 165, "buy": 30 }
+      "RCP": { "low": 27, "high": 165, "buy": 30 },
+      "SBD": { "low": 27, "high": 165, "buy": 30 },
+      "PBL": { "low": 27, "high": 165, "buy": 30 },
+      "YOU": { "low": 27, "high": 165, "buy": 30 }
     };
     this.borderStyles = {
       "buy": "solid 1px #0f0",
